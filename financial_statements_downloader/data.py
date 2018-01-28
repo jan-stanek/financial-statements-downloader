@@ -24,7 +24,7 @@ class Data:
     def update_downloaded(self, ico: str, capital_base: int, insolvency: bool, documents: dict):
         Subject = Query()
         self.db.update({'capital_base': capital_base, 'insolvency': insolvency, documents: documents},
-                       Subject.ico == ico)
+                       Subject.ico == ico) #todo dict
 
     def update_failed(self, ico):
         Subject = Query()

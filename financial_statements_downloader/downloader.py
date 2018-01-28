@@ -40,10 +40,15 @@ def download_data(data: Data, config: RawConfigParser):
 def _parse_extract(extract_url):
     result = urlopen(extract_url)
     bs = BeautifulSoup(result, "html5lib")
-    capital_base = int(bs.find('span', text=re.compile('Základní kapitál'))
-                       .parent.parent.parent
-                       .contents[3].contents[1].contents[1].contents[2]
-                       .text.replace(' ', ''))
+
+    capital_base_row = bs.find('span', text=re.compile('Základní kapitál'))
+    if capital_base_row is not None:
+        capital_base = int(capital_base_row
+                           .parent.parent.parent
+                           .contents[3].contents[1].contents[1].contents[2]
+                           .text.replace(' ', ''))
+    else:
+        capital_base = None
 
     insolvency = bs.find('span', text=re.compile('Údaje o insolvencích')) is not None
 
