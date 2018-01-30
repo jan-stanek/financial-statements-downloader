@@ -1,0 +1,6 @@
+PyPDF2
+click
+tinydb
+configparser
+beautifulsoup4
+html5lib

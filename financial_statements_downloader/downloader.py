@@ -1,6 +1,10 @@
 from configparser import RawConfigParser
-from urllib.request import urlopen
-from urllib.parse import urljoin
+from urllib.request import urlopen, urlretrieve, build_opener
+from urllib.parse import urljoin, urlparse, parse_qs
+
+import os
+
+import time
 from bs4 import BeautifulSoup
 import re
 from financial_statements_downloader.data import Data
@@ -20,8 +24,7 @@ def download_data(data: Data, config: RawConfigParser):
         ico = subject['ico']
 
         url = urljoin(base_url, search_url + ico)
-        result = urlopen(url)
-        bs = BeautifulSoup(result, PARSER)
+        bs = _open_url(url)
 
         extract_link = bs.find('a', text='Úplný výpis')
         if extract_link is None:
@@ -32,14 +35,13 @@ def download_data(data: Data, config: RawConfigParser):
         documents_url = urljoin(base_url, bs.find('a', text='Sbírka listin').get('href'))
 
         capital_base, insolvency = _parse_extract(extract_url)
-        documents = _download_documents(base_url, documents_url, config.get('downloader', 'documents_type'))
+        documents = _download_documents(base_url, documents_url, config.get('downloader', 'documents_type'), config.get('downloader', 'documents_dir'), ico)
 
         data.update_downloaded(ico, capital_base, insolvency, documents)
 
 
 def _parse_extract(extract_url):
-    result = urlopen(extract_url)
-    bs = BeautifulSoup(result, "html5lib")
+    bs = _open_url(extract_url)
 
     capital_base_row = bs.find('span', text=re.compile('Základní kapitál'))
     if capital_base_row is not None:
@@ -55,27 +57,61 @@ def _parse_extract(extract_url):
     return capital_base, insolvency
 
 
-def _download_documents(base_url, documents_url, type):
-    result = urlopen(documents_url)
-    bs = BeautifulSoup(result, PARSER)
+def _download_documents(base_url, documents_url, type, directory, ico):
+    bs = _open_url(documents_url)
 
     statements = bs.find_all('span', class_='symbol', text=re.compile(type))
 
     documents = {}
 
     for statement in statements:
-        row = statement.parent.parent.parent
+        while True:
+            row = statement.parent.parent.parent
 
-        document_url = urljoin(base_url, row.contents[1].contents[0].get('href'))
-        date_created = row.contents[5].text #todo parse
+            document_url = urljoin(base_url, row.contents[1].contents[0].get('href'))
+            date_created = row.contents[5].text #todo parse
 
-        document_result = urlopen(documents_url)
-        document_bs = BeautifulSoup(document_result, PARSER)
+            document_bs = _open_url(document_url)
 
-        file_url = urljoin(base_url, document_bs.find('th', text=re.compile('PDF podoba')).parent.contents[3].contents[0].get('href'))
+            document_pdf = document_bs.find('th', text=re.compile('PDF podoba'))
+            if document_pdf is None:
+                continue
+            file_url = urljoin(base_url, document_pdf.parent.contents[3].contents[0].get('href'))
 
-        documents[file_url] = date_created
+            parsed_url = urlparse(file_url)
+
+            name = parse_qs(parsed_url.query)['id'][0] + '.pdf'
+            path = directory + '/' + ico + '/' + name
+
+            if not os.path.exists(os.path.dirname(path)):
+                os.makedirs(os.path.dirname(path))
+
+            site = urlopen(file_url)
+
+            if "text/html" in site.getheader('Content-Type'):
+                continue
+
+            # urlretrieve(file_url, path)
+            f = open(path, "wb")
+            content = site.read()
+            f.write(content)
+            f.close()
+
+            documents[path] = date_created
+
+            time.sleep(1)
+
+            break
 
     return documents
+
+
+def _open_url(url):
+    opener = build_opener()
+    opener.addheaders = [('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gecko/20100101 Firefox/58.0')]
+    response = opener.open(url)
+    bs = BeautifulSoup(response, PARSER)
+    time.sleep(1)
+    return bs
 
 

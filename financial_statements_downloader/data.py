@@ -1,5 +1,6 @@
 from tinydb import TinyDB, Query
 
+
 class Data:
     db: TinyDB
 
@@ -23,8 +24,9 @@ class Data:
 
     def update_downloaded(self, ico: str, capital_base: int, insolvency: bool, documents: dict):
         Subject = Query()
-        self.db.update({'capital_base': capital_base, 'insolvency': insolvency, documents: documents},
-                       Subject.ico == ico) #todo dict
+
+        self.db.update({'downloaded': True, 'capital_base': capital_base, 'insolvency': insolvency, 'documents': documents},
+                       Subject.ico == ico)
 
     def update_failed(self, ico):
         Subject = Query()
