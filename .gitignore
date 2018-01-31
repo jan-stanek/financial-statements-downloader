@@ -3,6 +3,8 @@
 /*.json
 /*.csv
 /documents
-/venv
+/venv*
 /.pytest_cache
 /tests/fixtures/documents
+/dist
+/financial_statements_downloader.egg-info

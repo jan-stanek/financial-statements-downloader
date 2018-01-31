@@ -5,7 +5,7 @@ with open('README.rst') as f:
 
 setup(
     name='financial-statements-downloader',
-    version='0.1.0',
+    version='0.1.1',
     keywords='czech republic financial statements business register',
     description='Simple application for downloading financial statements from czech business register.',
     long_description=long_description,

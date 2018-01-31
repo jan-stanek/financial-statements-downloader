@@ -7,7 +7,12 @@ from financial_statements_downloader.parser import parse
 
 
 class FakeData(Data):
-    subject = {'ico': '00014028', 'invalid': False, 'downloaded': True, 'parsed': False, 'documents': [{'path': 'tests/fixtures/statements/test.pdf'}]}
+    subject = {'ico': '00014028',
+               'invalid': False,
+               'downloaded': True,
+               'parsed': False,
+               'documents': [{'file': 'tests/fixtures/statements/test.pdf'}]
+               }
 
     def __init__(self, file: str):
         pass

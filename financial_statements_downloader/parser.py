@@ -20,18 +20,20 @@ def parse(data: Data, config: RawConfigParser):
             break
 
         for document in subject['documents']:
-            path = document['path']
+            path = document['file']
 
             pdf = parser.from_file(path)
-            pdf_content = pdf['content']
 
-            pdf_content = re.sub(r'(,\d\d)', r'\1|', pdf_content)  # insert separator behind number
-            pdf_content = re.sub(r'(\d)\s+(\d)', r'\1\2', pdf_content)  # remove spaces between numbers
+            try:
+                pdf_content = pdf['content']
+                pdf_content = re.sub(r'(,\d\d)', r'\1|', pdf_content)  # insert separator behind number
+                pdf_content = re.sub(r'(\d)\s+(\d)', r'\1\2', pdf_content)  # remove spaces between numbers
+            except TypeError:
+                pdf_content = ""
 
             values = {}
 
             for items in config.items('parser'):
-                print(items)
                 values[items[0]] = _extract(pdf_content, items[1])
 
             data.update_parsed(subject['ico'], path, values)
@@ -46,7 +48,11 @@ def _extract(content: str, name: str):
     :type name: str
     :return: parsed number
     """
-    splitted_content = content.split(name)
-    content_behind = splitted_content[1]
-    trimmed_number = content_behind.split('|')[1]
-    return float(trimmed_number.replace(',', '.'))
+    try:
+        splitted_content = content.split(name)
+        content_behind = splitted_content[1]
+        trimmed_number = content_behind.split('|')[1]
+        parsed = float(trimmed_number.replace(',', '.'))
+    except IndexError:
+        parsed = None
+    return parsed
