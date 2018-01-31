@@ -85,7 +85,20 @@ class Data:
         :param values: extracted data
         :type values: dict
         """
+        subject = self.db.get(self.query.ico == ico)
+
+        documents = subject['documents']
+
+        newDocuments = []
+
+        for document in documents:
+            if document['file'] == path:
+                newDocuments.append({**document, **values})
+            else:
+                newDocuments.append(document)
+
         self.db.update(
-            {'values': values},
-            (self.query.ico == ico) & (self.query.documents.file == path)
+            {'parsed': True, 'documents': newDocuments},
+            self.query.ico == ico
         )
+

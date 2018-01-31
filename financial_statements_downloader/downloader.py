@@ -21,7 +21,7 @@ def download_data(data: Data, config: RawConfigParser):
 
     :param data: data object
     :type data: Data
-    :param config: config from config file
+    :param config: config fro
     :param config: RawConfigParser
     :return:
     """
