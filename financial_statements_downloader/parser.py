@@ -44,6 +44,9 @@ def _extract(content: str, name: str):
     :type content: str
     :param name: item to extract name
     :type name: str
-    :return:
+    :return: parsed number
     """
-    return 1
+    splitted_content = content.split(name)
+    content_behind = splitted_content[1]
+    trimmed_number = content_behind.split('|')[1]
+    return float(trimmed_number.replace(',', '.'))

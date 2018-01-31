@@ -5,3 +5,4 @@
 /documents
 /venv
 /.pytest_cache
+/tests/fixtures/documents

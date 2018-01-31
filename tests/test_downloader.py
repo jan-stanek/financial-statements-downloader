@@ -20,9 +20,6 @@ class FakeData(Data):
     def update_downloaded(self, ico: str, capital_base: int, insolvency: bool, documents: list):
         pass
 
-    def update_failed(self, ico: str):
-        pass
-
 
 data = FakeData('')
 
