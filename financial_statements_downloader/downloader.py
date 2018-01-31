@@ -9,8 +9,8 @@ from bs4 import BeautifulSoup
 import re
 from financial_statements_downloader.data import Data
 
-
 PARSER = "html5lib"
+WAIT = 1
 
 
 def download_data(data: Data, config: RawConfigParser):
@@ -35,7 +35,8 @@ def download_data(data: Data, config: RawConfigParser):
         documents_url = urljoin(base_url, bs.find('a', text='Sbírka listin').get('href'))
 
         capital_base, insolvency = _parse_extract(extract_url)
-        documents = _download_documents(base_url, documents_url, config.get('downloader', 'documents_type'), config.get('downloader', 'documents_dir'), ico)
+        documents = _download_documents(base_url, documents_url, config.get('downloader', 'documents_type'),
+                                        config.get('downloader', 'documents_dir'), ico)
 
         data.update_downloaded(ico, capital_base, insolvency, documents)
 
@@ -62,25 +63,26 @@ def _download_documents(base_url, documents_url, type, directory, ico):
 
     statements = bs.find_all('span', class_='symbol', text=re.compile(type))
 
-    documents = {}
+    documents = []
 
     for statement in statements:
         while True:
             row = statement.parent.parent.parent
 
             document_url = urljoin(base_url, row.contents[1].contents[0].get('href'))
-            date_created = row.contents[5].text #todo parse
+            date_created = row.contents[5].text  # todo parse
 
             document_bs = _open_url(document_url)
 
             document_pdf = document_bs.find('th', text=re.compile('PDF podoba'))
             if document_pdf is None:
-                continue
+                break
             file_url = urljoin(base_url, document_pdf.parent.contents[3].contents[0].get('href'))
 
-            parsed_url = urlparse(file_url)
+            document_name = document_bs.find('th', text=re.compile('Značka'))
+            name = document_name.parent.contents[3].text
+            name = re.sub(r'[\\/*?:"<>|]', "_", name) + ".pdf"
 
-            name = parse_qs(parsed_url.query)['id'][0] + '.pdf'
             path = directory + '/' + ico + '/' + name
 
             if not os.path.exists(os.path.dirname(path)):
@@ -97,9 +99,12 @@ def _download_documents(base_url, documents_url, type, directory, ico):
             f.write(content)
             f.close()
 
-            documents[path] = date_created
+            documents.append({
+                'file': path,
+                'date': date_created
+            })
 
-            time.sleep(1)
+            time.sleep(WAIT)
 
             break
 
@@ -108,10 +113,9 @@ def _download_documents(base_url, documents_url, type, directory, ico):
 
 def _open_url(url):
     opener = build_opener()
-    opener.addheaders = [('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gecko/20100101 Firefox/58.0')]
+    opener.addheaders = [
+        ('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gecko/20100101 Firefox/58.0')]
     response = opener.open(url)
     bs = BeautifulSoup(response, PARSER)
-    time.sleep(1)
+    time.sleep(WAIT)
     return bs
-
-
