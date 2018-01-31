@@ -38,6 +38,9 @@ def download_data(data: Data, config: RawConfigParser):
 
     for i in range(0, limit):
         subject = data.get_not_downloaded()
+        if subject == None:
+            break
+
         ico = subject['ico']
 
         url = urljoin(base_url, search_url + ico)

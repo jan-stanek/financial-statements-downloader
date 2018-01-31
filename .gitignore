@@ -4,3 +4,4 @@
 /*.csv
 /documents
 /venv
+/.pytest_cache
