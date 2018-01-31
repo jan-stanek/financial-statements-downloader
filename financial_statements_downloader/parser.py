@@ -7,9 +7,16 @@ from financial_statements_downloader.data import Data
 
 
 def parse(data: Data, config: RawConfigParser):
+    """Parses all subjects documents.
+
+    :param data: data object
+    :type data: Data
+    :param config: config from config file
+    :type config: RawConfigParser
+    """
     while True:
         subject = data.get_not_parsed()
-        if subject is None:
+        if subject is None:  # break if no not processed subject exists
             break
 
         for document in subject['documents']:
@@ -18,8 +25,8 @@ def parse(data: Data, config: RawConfigParser):
             pdf = parser.from_file(path)
             pdf_content = pdf['content']
 
-            pdf_content = re.sub(r'(,\d\d)', r'\1|', pdf_content)
-            pdf_content = re.sub(r'(\d)\s+(\d)', r'\1\2', pdf_content)
+            pdf_content = re.sub(r'(,\d\d)', r'\1|', pdf_content)  # insert separator behind number
+            pdf_content = re.sub(r'(\d)\s+(\d)', r'\1\2', pdf_content)  # remove spaces between numbers
 
             values = {}
 
@@ -31,4 +38,12 @@ def parse(data: Data, config: RawConfigParser):
 
 
 def _extract(content: str, name: str):
+    """Extracts information from document content.
+
+    :param content: document text content
+    :type content: str
+    :param name: item to extract name
+    :type name: str
+    :return:
+    """
     return 1

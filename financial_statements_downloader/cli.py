@@ -6,17 +6,18 @@ from financial_statements_downloader.data import Data
 from financial_statements_downloader.downloader import download_data
 from financial_statements_downloader.parser import parse
 
-
 DB_FILE = 'db.json'
+"""Database file name."""
+
 CONFIG_FILE = 'config.cfg'
+"""Config file name."""
 
 
 @click.group(name='fsd')
 @click.version_option(version='0.1', prog_name='fsd')
 @click.pass_context
 def cli(ctx):
-    """
-    Initializes common variables and stores them into context.
+    """Initializes common variables and stores them into context.
 
     :param ctx: click context
     """
@@ -32,8 +33,7 @@ def cli(ctx):
 @click.argument('file', type=click.Path(exists=True))
 @click.pass_context
 def import_icos(ctx, file: str):
-    """
-    Imports ICOs from file into database.
+    """Imports ICOs from file into database.
 
     File must contain one ICO per line.
 
@@ -49,8 +49,7 @@ def import_icos(ctx, file: str):
 @cli.command(help='Download documents for ICOs.')
 @click.pass_context
 def download(ctx):
-    """
-    Downloads documents for imported ICOs.
+    """Downloads documents for imported ICOs.
 
     :param ctx: click context
     """
@@ -63,8 +62,7 @@ def download(ctx):
 @cli.command(help='Extract information from downloaded documents.')
 @click.pass_context
 def extract(ctx):
-    """
-    Extracts information specified in config file from downloaded documents.
+    """Extracts information specified in config file from downloaded documents.
 
     :param ctx: click context
     """
@@ -75,7 +73,5 @@ def extract(ctx):
 
 
 def main():
-    """
-    Main function.
-    """
+    """Main function."""
     cli(obj={})

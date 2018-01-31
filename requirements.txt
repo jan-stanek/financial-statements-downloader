@@ -1,6 +1,6 @@
+tika
 click
 tinydb
 configparser
 beautifulsoup4
 html5lib
-pdfminer3k
