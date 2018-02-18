@@ -46,7 +46,7 @@ def download_data(data: Data, config: RawConfigParser):
         url = urljoin(base_url, search_url + ico)
         bs = _open_url(url)
 
-        extract_link = bs.find('a', text='Úplný výpis')  # find extract link
+        extract_link = bs.find('a', text='Výpis platných')  # find extract link
         if extract_link is None:
             data.update_failed(ico)
             continue
@@ -78,12 +78,23 @@ def _parse_extract(extract_url: str):
     """
     bs = _open_url(extract_url)
 
-    capital_base_row = bs.find('span', text=re.compile('Základní kapitál'))  # find base capital row
+    capital_base_row = bs.find('span', text=re.compile('(ákladní kapitál|Kmenové jmění)'))  # find base capital row
     if capital_base_row is not None:
-        capital_base = int(capital_base_row
-                           .parent.parent.parent
-                           .contents[3].contents[1].contents[1].contents[2]
-                           .text.replace(' ', ''))
+        try:
+            capital_base = capital_base_row.parent.parent.parent.contents[3].contents[1].contents[1].contents[2].text.replace(' ', '')
+            capital_base = re.sub(r'(Kč.*|,-.*|\.-.*)', '', capital_base)
+            capital_base = re.sub(r'\.(\d\d\d)', r'\1', capital_base).replace(',', '.')
+            capital_base = re.sub(r'[a-zá-žA-ZÁ-Ž]', '', capital_base)
+            if re.search(r'\d', capital_base):
+                try:
+                    capital_base = float(capital_base)
+                except Exception:
+                    print("Error: " + capital_base)
+                    capital_base = None
+            else:
+                capital_base = None
+        except IndexError:
+            capital_base = None
     else:
         capital_base = None
 

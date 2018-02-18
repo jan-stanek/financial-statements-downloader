@@ -71,7 +71,7 @@ class Data:
         :type ico: str
         """
         self.db.update(
-            {'invalid': True},
+            {'downloaded': True, 'invalid': True},
             self.query.ico == ico
         )
 
